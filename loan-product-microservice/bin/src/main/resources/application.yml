@@ -1,0 +1,25 @@
+server:
+  port: 9010
+  error:
+    include-stacktrace: never
+spring:
+  application:
+    name: loan-product-microservice
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    password: Bharat@10
+    url: 'jdbc:postgresql://localhost:5432/db_mortgage_process_accelerator?currentSchema=mpa_demo                '
+    username: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+logging:
+  file:
+    name: logs/loan_products.log
+  pattern:
+    console: "%d %-5level %logger : %msg%n" 
+    file: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"  
+  level:
+    ROOT: INFO  
+          
