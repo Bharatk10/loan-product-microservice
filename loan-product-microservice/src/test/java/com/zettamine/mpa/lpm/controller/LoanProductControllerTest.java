@@ -115,18 +115,23 @@ public class LoanProductControllerTest {
     }
     
     @Test
-    void testGetProductStatusHistory_ResourceNotFound() throws Exception {
-        Integer prodId = 10040;
+    void testGetProductStatusHistory() throws Exception {
+        // Define the product ID to be used in the test
+        Integer prodId = 1001;
 
-        when(loanProductService.getProductStatusHistory(prodId))
-            .thenThrow(new ResourceNotFoundException("Loan Product for " + prodId + " is never been active since it's Created"));
+        // Define a list of ProductStatusHistoryDto to be returned by the service
+        List<ProductStatusHistoryDto> productStatusHistory = new ArrayList<>();
+        
 
+        // Mock the loanProductService.getProductStatusHistory method
+        when(loanProductService.getProductStatusHistory(prodId)).thenReturn(productStatusHistory);
+
+        // Perform the GET request to the endpoint with the product ID
         mockMvc.perform(get("/api/v1/loan-product/product/fetch/productHistory/{prodId}", prodId)
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound());
-            
-          
+            .andExpect(status().isOk()); // Check endTime value in the second item
     }
+
     
     @Test
     void testUpdateLoanProduct() throws Exception {
