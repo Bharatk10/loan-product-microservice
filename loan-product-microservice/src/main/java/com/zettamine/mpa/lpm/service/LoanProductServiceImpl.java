@@ -71,6 +71,20 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 	private UnderWritingCriteriaFeignClient criteriaClient;
 
+	/**
+	 * Creates a new loan product based on the provided loan product DTO. This
+	 * method validates the input, checks for conflicts, and saves the loan product
+	 * to the repository.
+	 *
+	 * @param loanProductDto The DTO containing information about the loan product
+	 *                       to be created.
+	 * @throws ResourceAlreadyExistsException If a loan product with the same name
+	 *                                        already exists.
+	 * @throws DataViolationException         If there are conflicts or violations
+	 *                                        in the provided loan product data.
+	 * @throws ResourceNotFoundException      If any required resources are not
+	 *                                        found.
+	 */
 	@Override
 	@Transactional
 	public void create(LoanProductDto loanProductDto) {
@@ -115,18 +129,27 @@ public class LoanProductServiceImpl implements ILoanProductService {
 			throw new ResourceNotFoundException(
 					String.format(AppConstants.PROP_RSTR_NOT_EXISTS_MSG, missingRestrictions));
 		} else {
+
 			loanProduct.setPropertyRestrictionExists(AppConstants.STATUS_TRUE);
 			loanProduct.setPropertyRestrcitions(propRestrictions);
+			if (loanProd.getPropertyRestrcitions() == null || loanProd.getPropertyRestrcitions().isEmpty()) {
+
+				loanProduct.setPropertyRestrictionExists(AppConstants.STATUS_FALSE);
+			}
 		}
 
-		if (loanProd.getEscrowRequirements() != null) {
+		if (loanProd.getEscrowRequirements() == null) {
 
-			loanProduct.setEscrowRequired(AppConstants.STATUS_TRUE);
-
-		} else {
 			loanProduct.setEscrowRequired(AppConstants.STATUS_FALSE);
+		} else if (loanProd.getEscrowRequirements().isEmpty()) {
+			loanProduct.setEscrowRequired(AppConstants.STATUS_FALSE);
+		} else {
+			loanProduct.setEscrowRequired(AppConstants.STATUS_TRUE);
 		}
+
 		if (loanProd.getUnderwritingCriteria() == null) {
+			loanProduct.setStatus(AppConstants.STATUS_FALSE);
+		} else if (loanProd.getUnderwritingCriteria().isEmpty()) {
 			loanProduct.setStatus(AppConstants.STATUS_FALSE);
 		} else {
 			loanProduct.setStatus(AppConstants.STATUS_TRUE);
@@ -136,7 +159,7 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 		if (loanProdObj.getStatus()) {
 
-			updateLoanStatusHistory(loanProdObj.getProductId());
+			updateLoanStatus(loanProdObj.getProductId());
 
 			addUnderWritingCriteria(loanProdObj.getProductId(), loanProd.getUnderwritingCriteria());
 
@@ -159,7 +182,17 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 	}
 
-	
+	/**
+	 * Adds underwriting criteria to the specified loan product. This method checks
+	 * for the existence of the criteria, associates them with the loan product, and
+	 * updates the loan product's status accordingly.
+	 *
+	 * @param productId            The ID of the loan product to which criteria will
+	 *                             be added.
+	 * @param underwritingCriteria The list of underwriting criteria to be added.
+	 * @throws ResourceNotFoundException If the loan product or any of the criteria
+	 *                                   are not found.
+	 */
 	public void addUnderWritingCriteria(Integer productId, List<String> underwritingCriteria) {
 
 		loanProductRepo.findById(productId)
@@ -209,13 +242,43 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		LoanReqDto loanReqDto = new LoanReqDto(productId, escrowRequirements);
 
 		escrowClient.save(loanReqDto);
+
 	}
+
+	/**
+	 * Adds escrow requirements to the specified loan product.
+	 *
+	 * @param productId          The ID of the loan product to which escrow
+	 *                           requirements will be added.
+	 * @param escrowRequirements The list of escrow requirements to be added.
+	 * @throws ResourceNotFoundException If the loan product or any of the
+	 *                                   requirements are not found.
+	 */
 
 	@Override
 	public void addEscrowRequirementsToLoanProduct(Integer productId, List<String> escrowRequirements) {
 
 		LoanProduct loanProduct = loanProductRepo.findById(productId).orElseThrow(() -> new ResourceNotFoundException(
 				String.format(AppConstants.LOAN_PROD_NOT_EXISTS_BY_ID_MSG, productId)));
+
+		ResponseEntity<List<String>> responseEntityReqs = escrowClient.findByProdId(productId);
+
+		List<String> escrowReqList = responseEntityReqs.getBody();
+
+		Set<String> exitsRequirements = new HashSet<>();
+
+		for (String requirement : escrowRequirements) {
+
+			if (escrowReqList.contains(requirement)) {
+				exitsRequirements.add(requirement);
+
+			}
+		}
+		if (!exitsRequirements.isEmpty()) {
+
+			throw new ResourceAlreadyExistsException(
+					String.format(EscrowConstants.ESCR_REQ_ALREADY_EXISTS_MSG, exitsRequirements,productId));
+		}
 
 		addEscrowRequirements(productId, escrowRequirements);
 
@@ -232,8 +295,28 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 		LoanProduct loanProduct = loanProductRepo.findById(productId).orElseThrow(() -> new ResourceNotFoundException(
 				String.format(AppConstants.LOAN_PROD_NOT_EXISTS_BY_ID_MSG, productId)));
+		
+		List<UnderwritingCriteriaDto> criteriaDto = criteriaClient.fetchByLoanId(productId).getBody();
+		
+		List<String> loanProdcriterias = criteriaDto.stream().map(c->c.getCriteriaName()).collect(Collectors.toList());
 
-		addEscrowRequirements(productId, underwritingCriteria);
+		Set<String> exitsCriterias = new HashSet<>();
+		
+		for (String criteria : underwritingCriteria) {
+
+			if (loanProdcriterias.contains(criteria)) {
+				exitsCriterias.add(criteria);
+
+			}
+		}
+		
+		if(!exitsCriterias.isEmpty()) {
+			 
+			throw new ResourceAlreadyExistsException(
+					String.format(AppConstants.CRIT_REQ_ALREADY_EXISTS_MSG,  exitsCriterias,productId));
+		}
+		
+		addUnderWritingCriteria(productId, underwritingCriteria);
 
 		if (!loanProduct.getStatus()) {
 			loanProduct.setStatus(AppConstants.STATUS_FALSE);
@@ -242,6 +325,15 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 	}
 
+	/**
+	 * Retrieves a loan product DTO by its ID. This method fetches the loan product
+	 * from the repository and populates the DTO with relevant information,
+	 * including any associated escrow requirements and underwriting criteria.
+	 *
+	 * @param productId The ID of the loan product to retrieve.
+	 * @return The DTO containing information about the loan product.
+	 * @throws ResourceNotFoundException If the loan product is not found.
+	 */
 	@Override
 	public LoanProdDto getbyId(Integer productId) {
 
@@ -255,15 +347,15 @@ public class LoanProductServiceImpl implements ILoanProductService {
 			List<String> escrowRequirements = getEscrowRequirements(productId);
 			loanProductDto.setEscrowRequirements(escrowRequirements);
 		}
-		
-		List<UnderwritingCriteriaDto> criteriaDtoList = criteriaClient.fetchByLoanId(loanProd.getProductId()).getBody();
-		
-		 if(criteriaDtoList!=null) {
-			 
-			 List<String> criterias = criteriaDtoList.stream().map(criteriaDto -> criteriaDto.getCriteriaName()).collect(Collectors.toList());
-			 loanProductDto.setUnderwritingCriteria(criterias);				 
-		 }
 
+		List<UnderwritingCriteriaDto> criteriaDtoList = criteriaClient.fetchByLoanId(loanProd.getProductId()).getBody();
+
+		if (criteriaDtoList != null) {
+
+			List<String> criterias = criteriaDtoList.stream().map(criteriaDto -> criteriaDto.getCriteriaName())
+					.collect(Collectors.toList());
+			loanProductDto.setUnderwritingCriteria(criterias);
+		}
 
 		return loanProductDto;
 	}
@@ -322,6 +414,13 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		return conflicts;
 	}
 
+	/**
+	 * Updates the status of the specified loan product. If the product is currently
+	 * active, it will be deactivated, and vice versa.
+	 *
+	 * @param productId The ID of the loan product to update.
+	 * @throws ResourceNotFoundException If the loan product is not found.
+	 */
 	@Override
 	@Transactional
 	public void updateLoanProductStatus(Integer productId) {
@@ -379,7 +478,31 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		return true;
 
 	}
+	
+	public void updateLoanStatus(Integer productId) {
 
+		LoanProduct loanProduct = loanProductRepo.findById(productId).get();
+		
+			LocalDateTime maxSupportedDateTime = LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999999999);
+			loanProduct.setStatus(AppConstants.STATUS_TRUE);
+			loanProductRepo.save(loanProduct);
+			Integer userId = auditAwareImpl.getCurrentAuditor().get();
+			ProductStatusHistory prodStatusHistory = new ProductStatusHistory(loanProduct, LocalDateTime.now(),
+					maxSupportedDateTime, userId);
+			
+				loanStatusRepo.save(prodStatusHistory);
+
+	}
+
+	/**
+	 * Retrieves the status history of the specified loan product. This method
+	 * fetches all status changes for the product and returns them as DTOs.
+	 *
+	 * @param productId The ID of the loan product to retrieve status history for.
+	 * @return A list of DTOs containing status history information.
+	 * @throws ResourceNotFoundException If the loan product is not found or has no
+	 *                                   status history.
+	 */
 	@Override
 	public List<ProductStatusHistoryDto> getProductStatusHistory(Integer productId) {
 
@@ -391,7 +514,7 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		if (prodStatusHistoryList.isEmpty()) {
 
 			throw new ResourceNotFoundException(String.format(AppConstants.LOAN_PROD_NOT_ACTIVE, productId));
-		} 
+		}
 		List<ProductStatusHistoryDto> propHistoryDtoList = new ArrayList<>();
 		ProductStatusHistoryDto propHistoryDto;
 		for (ProductStatusHistory prodStatusHistory : prodStatusHistoryList) {
@@ -406,6 +529,17 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 		return propHistoryDtoList;
 	}
+
+	/**
+	 * Updates the status of the prepayment penalty associated with the specified
+	 * loan product. If the penalty is currently active, it will be deactivated, and
+	 * vice versa.
+	 *
+	 * @param productId The ID of the loan product to update prepayment penalty
+	 *                  status for.
+	 * @throws ResourceNotFoundException If the loan product or prepayment penalty
+	 *                                   is not found.
+	 */
 
 	@Override
 	public void updatePrePayPenalityStatus(Integer productId) {
@@ -433,6 +567,15 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 	}
 
+	/**
+	 * Updates the details of the prepayment penalty associated with the specified
+	 * loan product.
+	 *
+	 * @param penalityDto The DTO containing updated prepayment penalty information.
+	 * @throws ResourceNotFoundException If the loan product or prepayment penalty
+	 *                                   is not found.
+	 */
+
 	@Override
 	public void updatePrePayPenality(PrePayPenalityDto penalityDto) {
 
@@ -455,6 +598,18 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 	}
 
+	/**
+	 * Creates a new prepayment penalty for the specified loan product.
+	 *
+	 * @param penalityDto The DTO containing information about the prepayment
+	 *                    penalty to be created.
+	 * @throws MismatchFoundException         If there is a mismatch in the provided
+	 *                                        data.
+	 * @throws ResourceNotFoundException      If the loan product or prepayment
+	 *                                        penalty already exists.
+	 * @throws ResourceAlreadyExistsException If the prepayment penalty already
+	 *                                        exists.
+	 */
 	@Override
 	public void createPrePayPenality(PrePayPenalityDto penalityDto) {
 
@@ -483,6 +638,16 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 	}
 
+	/**
+	 * Updates the details of the specified loan product.
+	 *
+	 * @param productId      The ID of the loan product to update.
+	 * @param loanProductDto The DTO containing updated loan product information.
+	 * @throws ResourceNotFoundException If the loan product is not found or there
+	 *                                   is a mismatch in data.
+	 * @throws DataViolationException    If there are conflicts or violations in the
+	 *                                   provided loan product data.
+	 */
 	@Override
 	public void updateLoanProduct(Integer productId, LoanProductDto loanProductDto) {
 		loanProductDto = StringNormalization.processLoanProductDto(loanProductDto);
@@ -535,6 +700,13 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		return propRstrList;
 	}
 
+	/**
+	 * Retrieves the ID of a loan product by its name.
+	 *
+	 * @param loanProductName The name of the loan product.
+	 * @return The ID of the loan product.
+	 * @throws ResourceNotFoundException If the loan product is not found.
+	 */
 	@Override
 	public Integer getLoanProductIdByProductName(String loanProductName) {
 		String productName = StringNormalization.processSentance(loanProductName).toUpperCase().trim();
@@ -546,6 +718,14 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		return loanProduct.getProductId();
 	}
 
+	/**
+	 * Searches for loan products based on the provided search criteria. This method
+	 * applies filters based on loan term, credit score, escrow requirements, and
+	 * other criteria, and returns a list of matching loan product DTOs.
+	 *
+	 * @param searchCriteria The criteria to use for searching loan products.
+	 * @return A list of DTOs containing information about matching loan products.
+	 */
 	@Override
 	public List<LoanProdDto> searchLoanProducts(LoanProductSearchCriteria searchCriteria) {
 
@@ -605,7 +785,7 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		List<LoanProdDto> loanProdDtoList = new ArrayList<>();
 
 		List<String> escrowRequirements = new ArrayList<>();
-		
+
 		List<String> criterias = new ArrayList<>();
 
 		for (LoanProduct loanProd : loanProducts) {
@@ -618,14 +798,16 @@ public class LoanProductServiceImpl implements ILoanProductService {
 				loanProductDto.setEscrowRequirements(escrowRequirements);
 
 			}
-			
-			 List<UnderwritingCriteriaDto> criteriaDtoList = criteriaClient.fetchByLoanId(loanProd.getProductId()).getBody();
-			 
-			 if(criteriaDtoList!=null) {
-				 
-				 criterias = criteriaDtoList.stream().map(criteriaDto -> criteriaDto.getCriteriaName()).collect(Collectors.toList());
-				 loanProductDto.setUnderwritingCriteria(criterias);				 
-			 }
+
+			List<UnderwritingCriteriaDto> criteriaDtoList = criteriaClient.fetchByLoanId(loanProd.getProductId())
+					.getBody();
+
+			if (criteriaDtoList != null) {
+
+				criterias = criteriaDtoList.stream().map(criteriaDto -> criteriaDto.getCriteriaName())
+						.collect(Collectors.toList());
+				loanProductDto.setUnderwritingCriteria(criterias);
+			}
 
 			loanProdDtoList.add(loanProductDto);
 		}
@@ -674,6 +856,17 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		return loanProdList;
 	}
 
+	/**
+	 * Adds property restrictions to the specified loan product.
+	 *
+	 * @param productId The ID of the loan product to which restrictions will be
+	 *                  added.
+	 * @param propRstr  The list of property restrictions to be added.
+	 * @throws ResourceNotFoundException      If the loan product or any of the
+	 *                                        restrictions are not found.
+	 * @throws ResourceAlreadyExistsException If any of the restrictions already
+	 *                                        exist for the product.
+	 */
 	@Override
 	public void addRestrictions(Integer productId, List<String> propRstr) {
 		LoanProduct loanProduct = loanProductRepo.findById(productId).orElseThrow(() -> new ResourceNotFoundException(
@@ -723,6 +916,16 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		loanProductRepo.save(loanProduct);
 
 	}
+
+	/**
+	 * Removes property restrictions from the specified loan product.
+	 *
+	 * @param productId The ID of the loan product from which restrictions will be
+	 *                  removed.
+	 * @param propRstrs The list of property restrictions to be removed.
+	 * @throws ResourceNotFoundException If the loan product or any of the
+	 *                                   restrictions are not found.
+	 */
 
 	@Override
 	public void removeRestrictions(Integer productId, List<String> propRstrs) {
@@ -776,6 +979,16 @@ public class LoanProductServiceImpl implements ILoanProductService {
 
 	}
 
+	/**
+	 * Retrieves the status of the prepayment penalty associated with the specified
+	 * loan product.
+	 *
+	 * @param prodId The ID of the loan product to retrieve prepayment penalty
+	 *               status for.
+	 * @return The DTO containing information about the prepayment penalty status.
+	 * @throws ResourceNotFoundException If the loan product or prepayment penalty
+	 *                                   is not found.
+	 */
 	@Override
 	public PrepayPenaltyStatusDto getPrepayPenaltyById(Integer prodId) {
 
@@ -803,6 +1016,16 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		return prepayPenaltyStatusDto;
 
 	}
+
+	/**
+	 * Removes escrow requirements from the specified loan product.
+	 *
+	 * @param productId    The ID of the loan product from which requirements will
+	 *                     be removed.
+	 * @param requirements The list of escrow requirements to be removed.
+	 * @throws ResourceNotFoundException If the loan product or any of the
+	 *                                   requirements are not found.
+	 */
 	@Override
 	@Transactional
 	public void removeEscrowRequirements(Integer productId, List<String> requirements) {

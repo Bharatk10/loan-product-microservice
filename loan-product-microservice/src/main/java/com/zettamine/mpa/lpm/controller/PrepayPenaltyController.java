@@ -36,6 +36,14 @@ public class PrepayPenaltyController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PrepayPenaltyController.class);
 
+	/**
+	 * Create Prepay Penalty REST API.
+	 *
+	 * @param penalityDto The DTO containing information about the Prepay Penalty to
+	 *                    be created.
+	 * @return ResponseEntity<?> HTTP response indicating the status of the
+	 *         operation.
+	 */
 	@Operation(summary = "Create Prepay Penalty  REST API", description = "REST API to create a Prepay Penalty")
 	@ApiResponses({ @ApiResponse(responseCode = "201", description = "HTTP Status CREATED"),
 			@ApiResponse(responseCode = "409", description = "HTTP Status CONFLICT"),
@@ -49,9 +57,17 @@ public class PrepayPenaltyController {
 				.body(new ResponseDto(AppConstants.STATUS_201, AppConstants.LOAN_PRODUCT_PENALITY_CREATED_MESSAGE));
 	}
 
+	/**
+	 * Update Prepay Penalty Details REST API.
+	 *
+	 * @param penalityDto The DTO containing updated information about the Prepay
+	 *                    Penalty.
+	 * @return ResponseEntity<?> HTTP response indicating the status of the
+	 *         operation.
+	 */
 	@Operation(summary = "Update Prepay Penalty Details REST API", description = "REST API to update Prepay Penalty details")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
-			@ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))) })	
+			@ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))) })
 	@PutMapping("/update")
 	public ResponseEntity<?> updateprePayPenality(@Valid @RequestBody PrePayPenalityDto penalityDto) {
 
@@ -61,6 +77,14 @@ public class PrepayPenaltyController {
 				.body(new ResponseDto(AppConstants.STATUS_200, AppConstants.LOAN_PRODUCT_PENALITY_MESSAGE));
 	}
 
+	/**
+	 * Update Prepay Penalty Status By Loan Product Id REST API.
+	 *
+	 * @param prodId The ID of the Loan Product for which Prepay Penalty status
+	 *               needs to be updated.
+	 * @return ResponseEntity<?> HTTP response indicating the status of the
+	 *         operation.
+	 */
 	@Operation(summary = "Update Prepay Penalty Status By Loan Product Id REST API", description = "REST API to  Update Prepay Penalty Status based on Loan Product Id")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
 			@ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))) })
@@ -72,6 +96,15 @@ public class PrepayPenaltyController {
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(new ResponseDto(AppConstants.STATUS_200, AppConstants.LOAN_PRODUCT_PENALITY_STATUS_MESSAGE));
 	}
+
+	/**
+	 * Fetch Prepay Penalty Details By Loan Product Id REST API.
+	 *
+	 * @param prodId The ID of the Loan Product for which Prepay Penalty details
+	 *               need to be fetched.
+	 * @return ResponseEntity<PrepayPenaltyStatusDto> HTTP response containing DTO
+	 *         representation of Prepay Penalty details.
+	 */
 
 	@Operation(summary = "Fetch Prepay Penalty Details By Loan Product Id REST API", description = "REST API to fetch Prepay Penalty Details based on Loan Product Id REST API")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),

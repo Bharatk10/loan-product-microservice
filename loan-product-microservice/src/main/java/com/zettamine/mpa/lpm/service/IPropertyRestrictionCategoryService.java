@@ -19,11 +19,7 @@ public interface IPropertyRestrictionCategoryService {
 	 */
 	public PropertyRestrictionCategoryDto getById(Integer categoryId);
 	
-	/**
-	 *
-	 * @return List<PropertyRestrictionCategoryDto>
-	 */
-	public List<PropertyRestrictionCategoryDto> getAll();
+	
 	
 	/**
 	 * 
@@ -31,11 +27,7 @@ public interface IPropertyRestrictionCategoryService {
 	 */
 	public void update(PropertyRestrictionCategoryDto categoryDto,Integer categoryId);
 	
-	/**
-	 * 
-	 * @param categoryId
-	 */
-	public void delete(Integer categoryId);
+
 	
 	/**
 	 * 

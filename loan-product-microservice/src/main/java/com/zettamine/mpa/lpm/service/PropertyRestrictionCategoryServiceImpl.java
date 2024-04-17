@@ -23,6 +23,12 @@ public class PropertyRestrictionCategoryServiceImpl implements IPropertyRestrict
 
 	private PropertyRestrictionCategoryRepository propRestrCategoryRepo;
 
+	 /**
+    * Creates a new property restriction category based on the provided DTO.
+    *
+    * @param categoryDto The DTO containing information about the property restriction category to be created.
+    * @throws ResourceAlreadyExistsException If the property restriction category already exists.
+    */
 	@Override
 	public void create(PropertyRestrictionCategoryDto categoryDto) {
 
@@ -31,6 +37,7 @@ public class PropertyRestrictionCategoryServiceImpl implements IPropertyRestrict
 		PropertyRestrictionCategory propRestCatgegory = PropertyRestrictionCategoryMapper
 				.RestrictionCategoryDtoToRestrictionCategory(new PropertyRestrictionCategory(), propCategoryDto);
 
+		
 		Optional<PropertyRestrictionCategory> optPropRestCatg = propRestrCategoryRepo
 				.findByCategoryType(propRestCatgegory.getCategoryType());
 
@@ -44,7 +51,13 @@ public class PropertyRestrictionCategoryServiceImpl implements IPropertyRestrict
 		propRestrCategoryRepo.save(propRestCatgegory);
 
 	}
-
+	   /**
+     * Retrieves a property restriction category by its ID.
+     *
+     * @param categoryId The ID of the property restriction category to retrieve.
+     * @return The DTO representing the property restriction category.
+     * @throws ResourceNotFoundException If the property restriction category does not exist.
+     */
 	@Override
 	public PropertyRestrictionCategoryDto getById(Integer categoryId) {
 
@@ -57,10 +70,14 @@ public class PropertyRestrictionCategoryServiceImpl implements IPropertyRestrict
 		return propRestCatgegoryDto;
 	}
 
-	@Override
-	public List<PropertyRestrictionCategoryDto> getAll() {
-		return null;
-	}
+	 /**
+     * Updates an existing property restriction category identified by its ID.
+     *
+     * @param categoryDto The DTO containing updated information about the property restriction category.
+     * @param categoryId The ID of the property restriction category to update.
+     * @throws ResourceNotFoundException If the property restriction category or its corresponding category type does not exist.
+     * @throws MismatchFoundException If there is a mismatch between the category type or category ID.
+     */
 
 	@Override
 	public void update(PropertyRestrictionCategoryDto categoryDto, Integer categoryId) {
@@ -88,7 +105,14 @@ public class PropertyRestrictionCategoryServiceImpl implements IPropertyRestrict
 
 	}
 
-
+	 /**
+    * Updates the category type of a property restriction category.
+    *
+    * @param categoryType The new category type.
+    * @param categoryId The ID of the property restriction category to update.
+    * @throws ResourceNotFoundException If the property restriction category does not exist.
+    * @throws ResourceAlreadyExistsException If the new category type already exists.
+    */
 	@Override
 	public void updateCategoryType(String categoryType, Integer categoryId) {
 		
@@ -110,12 +134,11 @@ public class PropertyRestrictionCategoryServiceImpl implements IPropertyRestrict
 		
 		
 	}
-
-	@Override
-	public void delete(Integer categoryId) {
-		// TODO Auto-generated method stub
-		
-	}
+	   /**
+     * Retrieves all property restriction categories.
+     *
+     * @return A list of DTOs representing all property restriction categories.
+     */
 
 	@Override
 	public List<String> findAllCategoryTypes() {

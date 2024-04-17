@@ -136,6 +136,10 @@ public interface AppConstants {
 	
 	public static final String RSTR_UPDATED_SUCCESS = "Restriction Type updated successfully";
 
-	public static final String PROP_RSTR_TYPE_ALREADY_EXISTS = "%s property restrictions type is alredy exist";
+	public static final String PROP_RSTR_TYPE_ALREADY_EXISTS = "%s property restrictions type is already exist";
+
+	public static final String CRIT_REQ_ALREADY_EXISTS_MSG = "'%s' Under Writing Criteria are already exist with loan product : %s";
+
+	
 	
 }

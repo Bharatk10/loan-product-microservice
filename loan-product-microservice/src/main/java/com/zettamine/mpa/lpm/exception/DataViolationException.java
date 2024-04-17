@@ -11,7 +11,11 @@ public class DataViolationException extends RuntimeException {
         this.conflicts = conflicts;
     }
 
-    @Override
+    public DataViolationException(String message) {
+		super(message);
+	}
+
+	@Override
     public String getMessage() {
         return mapToString(conflicts);
     }

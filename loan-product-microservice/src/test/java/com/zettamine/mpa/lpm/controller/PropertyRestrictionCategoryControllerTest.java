@@ -9,7 +9,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -30,6 +34,7 @@ import com.zettamine.mpa.lpm.exception.ResourceAlreadyExistsException;
 import com.zettamine.mpa.lpm.exception.ResourceNotFoundException;
 import com.zettamine.mpa.lpm.model.PropertyRestrictionCategoryDto;
 import com.zettamine.mpa.lpm.service.IPropertyRestrictionCategoryService;
+import com.zettamine.mpa.lpm.util.CatTypeReq;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -214,4 +219,36 @@ public class PropertyRestrictionCategoryControllerTest {
 				.andExpect(jsonPath("$.errorTime").exists());
 
 	}
+	
+	@Test
+	public void testGetAllCategoryTypes() throws Exception{
+		
+		List<String> types = new ArrayList<>();
+		types.add("one");
+		types.add("two");
+		
+		when(categoryService.findAllCategoryTypes()).thenReturn(types);
+		
+		mockMvc.perform(get("/api/v1/loan-product/restr-ctrgy/fetch/category-types")).andExpect(status().isOk());
+		
+		
+	}
+	
+	@Test
+	public void updatePropertyRestrictionCategoryTypeSuccess() throws Exception{
+		
+		CatTypeReq  catTypeReq = new CatTypeReq();
+		
+		catTypeReq.setCategoryType("one");
+		
+		MockHttpServletRequestBuilder requestBuilder = put("/api/v1/loan-product/restr-ctrgy/update/category-type/{id}" , 1)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(catTypeReq));
+		
+		mockMvc.perform(requestBuilder)
+				.andExpect(status().isOk()).andExpect(jsonPath("$.statusCode").value(AppConstants.STATUS_200))
+				.andExpect(jsonPath("$.statusMsg").value(AppConstants.UPDATE_MESSAGE));
+		
+	}
+	
 }

@@ -3,6 +3,10 @@ package com.zettamine.mpa.lpm.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -26,6 +29,7 @@ import com.zettamine.mpa.lpm.exception.ResourceNotFoundException;
 import com.zettamine.mpa.lpm.mapper.PropertyRestrictionCategoryMapper;
 import com.zettamine.mpa.lpm.model.PropertyRestrictionCategoryDto;
 import com.zettamine.mpa.lpm.repository.PropertyRestrictionCategoryRepository;
+import com.zettamine.mpa.lpm.util.CatTypeReq;
 
 //@ExtendWith(MockitoExtension.class)
 @SpringBootTest
@@ -232,4 +236,56 @@ class PropertyRestrictionCategoryServiceImplTest {
 		verify(propRestrCategoryRepo).findById(categoryId);
 
 	}
+	
+	@Test
+    public void testUpdateCategoryType_Success() {
+       
+        Integer categoryId = 1;
+        String newType = "NewType";
+       
+		when(propRestrCategoryRepo.findById(categoryId)).thenReturn(Optional.of(new PropertyRestrictionCategory()));
+		
+		when(propRestrCategoryRepo.findByCategoryType(any(String.class))).thenReturn(Optional.empty());
+
+
+        
+        categoryService.updateCategoryType(newType, categoryId);
+
+        verify(propRestrCategoryRepo, times(1)).save(any()); // Adjust according to actual method call
+    }
+
+    @Test
+    public void testUpdateCategoryType_ResourceNotFoundException() {
+      
+        Integer categoryId = 1;
+        String newType = "NewType";
+       
+        when(propRestrCategoryRepo.findById(categoryId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+        	categoryService.updateCategoryType(newType,categoryId);
+        });
+
+        verify(propRestrCategoryRepo).findById(categoryId);
+    }
+    
+    @Test
+    public void testUpdateCategoryType_ResourceAlreadyExistsException() {
+      
+        Integer categoryId = 1;
+        String newType = "NewType";
+       
+      
+
+		when(propRestrCategoryRepo.findById(categoryId)).thenReturn(Optional.of(new PropertyRestrictionCategory()));
+
+		when(propRestrCategoryRepo.findByCategoryType(any(String.class))).thenReturn(Optional.of(new PropertyRestrictionCategory()));
+
+		assertThrows(ResourceAlreadyExistsException.class,
+				() -> categoryService.updateCategoryType(newType, categoryId));
+
+		verify(propRestrCategoryRepo).findByCategoryType(any(String.class));
+
+		verify(propRestrCategoryRepo).findById(categoryId);
+    }
 }

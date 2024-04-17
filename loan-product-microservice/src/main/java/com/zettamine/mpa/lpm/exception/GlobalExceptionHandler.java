@@ -61,8 +61,20 @@ public class GlobalExceptionHandler  {
 	
 	@ExceptionHandler(DataViolationException.class)
 	public ResponseEntity<?> dataViolationException(DataViolationException ex) {
-		
+		 
 		return new ResponseEntity<String>(ex.getMessage(), HttpStatus.CONFLICT);
+	}
+	
+	@ExceptionHandler(MismatchFoundException.class)
+	public ResponseEntity<ErrorResponseDto> httpMismatchFoundException(WebRequest request,
+			MismatchFoundException ex) {
+		ErrorResponseDto errResponseDto = new ErrorResponseDto();
+		errResponseDto.setApiPath(request.getDescription(false));
+		errResponseDto.setErrorCode(HttpStatus.BAD_REQUEST);
+		errResponseDto.setErrorMessage(ex.getMessage());
+		errResponseDto.setErrorTime(LocalDateTime.now());
+		return new ResponseEntity<ErrorResponseDto>(errResponseDto, HttpStatus.BAD_REQUEST);
+		
 	}
 	
 	

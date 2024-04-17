@@ -41,6 +41,12 @@ public class LoanProductController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(LoanProductController.class);
 
+	  /**
+     * Create LoanProduct REST API.
+     *
+     * @param loanProductDto The DTO containing information about the LoanProduct to be created.
+     * @return ResponseEntity<?> HTTP response indicating the status of the operation.
+     */
 	@Operation(summary = "Create LoanProduct REST API", description = "REST API to create new LoanProduct")
 		@ApiResponses({@ApiResponse(responseCode = "201", description = "HTTP Status CREATED"),
 			@ApiResponse(responseCode = "409", description = "HTTP Status CONFLICT"),
@@ -54,6 +60,13 @@ public class LoanProductController {
 				.body(new ResponseDto(AppConstants.STATUS_201, AppConstants.CREATE_LOAN_PRODUCT_MESSAGE));
 	}
 
+
+    /**
+     * Fetch LoanProduct Details By LoanProductId REST API.
+     *
+     * @param prodId The ID of the LoanProduct to fetch details for.
+     * @return ResponseEntity<?> HTTP response containing DTO representation of LoanProduct details.
+     */
 	@Operation(summary = "Fetch LoanProduct Details By LoanProductId REST API", description = "REST API to fetch LoanProduct details based on LoanProduct Id ")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
 			@ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))) })
@@ -65,7 +78,14 @@ public class LoanProductController {
 		return ResponseEntity.status(HttpStatus.OK).body(loanProductDto);
 	}
 
-	@Operation(summary = "Update LoanProduct status  REST API", description = "REST API to LoanProduct status details based on LoanProduct Id")
+
+    /**
+     * Update LoanProduct status REST API.
+     *
+     * @param prodId The ID of the LoanProduct to update status for.
+     * @return ResponseEntity<?> HTTP response indicating the status of the operation.
+     */
+	@Operation(summary = "Update LoanProduct status  REST API", description = "REST API to LoanProduct status details based on LoanProduct Id for loan product microservice")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
 			@ApiResponse(responseCode = "417", description = "Expectation Failed"),
 			@ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))) })	
@@ -77,6 +97,12 @@ public class LoanProductController {
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(new ResponseDto(AppConstants.STATUS_200, AppConstants.LOAN_PRODUCT_STATUS_MESSAGE));
 	}
+	 /**
+     * Fetch LoanProduct Status History Details By LoanProduct Id REST API.
+     *
+     * @param prodId The ID of the LoanProduct to fetch status history for.
+     * @return ResponseEntity<?> HTTP response containing DTO representation of LoanProduct status history details.
+     */
 
 	@Operation(summary = "Fetch LoanProduct Status History Details By LoanProduct Id REST API", description = "REST API to fetch LoanProduct Status History  details based on LoanProduct Id ")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
@@ -89,6 +115,13 @@ public class LoanProductController {
 		return ResponseEntity.status(HttpStatus.OK).body(productStatusHistory);
 
 	}
+	 /**
+     * Update LoanProduct Details By LoanProductId REST API.
+     *
+     * @param prodId        The ID of the LoanProduct to update.
+     * @param loanProductDto The DTO containing updated information about the LoanProduct.
+     * @return ResponseEntity<?> HTTP response indicating the status of the operation.
+     */
 
 	@Operation(summary = "Update LoanProduct Details By LoanProductId REST API", description = "REST API to LoanProduct Details based on a LoanProductId ")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
@@ -102,6 +135,12 @@ public class LoanProductController {
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(new ResponseDto(AppConstants.STATUS_200, AppConstants.UPDATE_LOAN_PRODUCT_MESSAGE));
 	}
+	 /**
+     * Search LoanProduct Details By criteria REST API.
+     *
+     * @param criteria The search criteria to filter LoanProducts.
+     * @return ResponseEntity<?> HTTP response containing list of LoanProducts matching the criteria.
+     */
 
 	@Operation(summary = " Search LoanProduct Details By criteria REST API", description = "REST API to  search for LoanProduct details by Search Criteria")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
@@ -114,6 +153,13 @@ public class LoanProductController {
 		return ResponseEntity.status(HttpStatus.OK).body(loanProducts);
 	}
 
+    /**
+     * Fetch Loan Product Id By Loan Product Name REST API.
+     *
+     * @param loanProductName The name of the Loan Product to fetch ID for.
+     * @return ResponseEntity<?> HTTP response containing the ID of the Loan Product.
+     */
+	
 	@Operation(summary = "Fetch Loan Product Id By Loan Product Name  REST API", description = "REST API to  Loan Product Id based on Loan Product Name")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
 			@ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))) })
@@ -123,8 +169,14 @@ public class LoanProductController {
 
 		return ResponseEntity.status(HttpStatus.OK).body(loanProductId);
 	}
+	   /**
+     * Update Loan Product Status By Loan Product Id REST API.
+     *
+     * @param productId The ID of the Loan Product to update status for.
+     * @return ResponseEntity<Boolean> HTTP response indicating the success of the operation.
+     */
 
-	@Operation(summary = "Update Loan Product Status By Loan Product Id REST API", description = "REST API to Update Loan Product Status  Loan Product Id  based on a Loan Product Id")
+	@Operation(summary = "Update Loan Product Status By Loan Product Id REST API", description = "REST API to Update Loan Product Status  Loan Product Id  based on a Loan Product Id for under writing criteria")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
 			@ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))) })	
 	@PutMapping("/update/loan-status/{productId}")
@@ -135,6 +187,14 @@ public class LoanProductController {
 		return ResponseEntity.status(HttpStatus.OK).body(status);
 
 	}
+
+    /**
+     * Add Property Restrictions To Loan Product By Loan Product Id.
+     *
+     * @param productId    The ID of the Loan Product to add restrictions to.
+     * @param restrictions The list of restrictions to add.
+     * @return ResponseEntity<?> HTTP response indicating the status of the operation.
+     */
 
 	@Operation(summary = "Add Propperty Restrictions To Loan Product By Loan Product Id", description = "REST API to Add Propperty Restrictions To Loan Product By Loan Prodcut Id")
 	@ApiResponses({ @ApiResponse(responseCode = "201", description = "HTTP Status CREATED"),
@@ -147,6 +207,13 @@ public class LoanProductController {
 				.body(new ResponseDto(AppConstants.STATUS_201, AppConstants.PROP_RSTR_ADDED_SUCCESSFULL));
 
 	}
+	 /**
+     * Remove Property Restrictions Of a Loan Product By Loan Product Id.
+     *
+     * @param productId    The ID of the Loan Product to remove restrictions from.
+     * @param restrictions The list of restrictions to remove.
+     * @return ResponseEntity<?> HTTP response indicating the status of the operation.
+     */
 
 	@Operation(summary = "Remove Propperty Restrictions Of a  Loan Product By Loan Prodcut Id", description = "REST API to Remove Propperty Restrictions of  Loan Product Based on Loan Prodcut Id" )
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
@@ -159,6 +226,13 @@ public class LoanProductController {
 				.body(new ResponseDto(AppConstants.STATUS_200, AppConstants.PROP_RSTR_REMOVED_SUCCESSFULL));
 	}
 
+	 /**
+     * Remove Escrow Requirements Of a Loan Product By Loan Product Id.
+     *
+     * @param productId     The ID of the Loan Product to remove escrow requirements from.
+     * @param requirements  The list of escrow requirements to remove.
+     * @return ResponseEntity<?> HTTP response indicating the status of the operation.
+     */
 
 	@Operation(summary = "Remove Escrow Requirements Of a  Loan Product By Loan Prodcut Id", description = "REST API to Remove Propperty Restrictions of  Loan Product Based on Loan Prodcut Id" )
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
@@ -172,6 +246,13 @@ public class LoanProductController {
 				.body(new ResponseDto(AppConstants.STATUS_200, AppConstants.ESCROW_REQ_REMOVED_SUCCESSFULL));
 	}
 
+	 /**
+     * Add Escrow Requirements Of a Loan Product By Loan Product Id.
+     *
+     * @param productId     The ID of the Loan Product to add escrow requirements to.
+     * @param requirements  The list of escrow requirements to add.
+     * @return ResponseEntity<?> HTTP response indicating the status of the operation.
+     */
 
 	@Operation(summary = "Add Escrow Requirements Of a  Loan Product By Loan Prodcut Id", description = "REST API to Remove Propperty Restrictions of  Loan Product Based on Loan Prodcut Id" )
 	@ApiResponses({ @ApiResponse(responseCode = "201", description = "HTTP Status CRETAED"),
@@ -185,6 +266,14 @@ public class LoanProductController {
 				.body(new ResponseDto(AppConstants.STATUS_201, AppConstants.ESCROW_REQUI_ADDED_SUCCESSFULL));
 	}
 
+
+    /**
+     * Add Underwriting Criteria Of a Loan Product By Loan Product Id.
+     *
+     * @param productId The ID of the Loan Product to add underwriting criteria to.
+     * @param criterias The list of underwriting criteria to add.
+     * @return ResponseEntity<?> HTTP response indicating the status of the operation.
+     */
 
 	@Operation(summary = "Add Underwriting Criteria Of a  Loan Product By Loan Prodcut Id", description = "REST API to Remove Propperty Restrictions of  Loan Product Based on Loan Prodcut Id" )
 	@ApiResponses({ @ApiResponse(responseCode = "201", description = "HTTP Status CREATED"),

@@ -41,6 +41,7 @@ public interface EscrowConstants {
 	public static final String STATUS_409 = "409";
 	
 	public static final String ESCR_REQ_NOT_EXISTS_MSG = "Escrow Requiremnt not found with the given input data Requirement Name : %s";
+	public static final String ESCR_REQ_ALREADY_EXISTS_MSG = "'%s' Escrow Requiremnts are already exist with loan product : %s";
 
 
 }

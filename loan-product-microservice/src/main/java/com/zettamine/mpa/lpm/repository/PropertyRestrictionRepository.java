@@ -10,13 +10,30 @@ import org.springframework.stereotype.Repository;
 
 import com.zettamine.mpa.lpm.entity.PropertyRestriction;
 
+/**
+ * This interface represents a repository for managing PropertyRestriction
+ * entities, which define various types of property restrictions. It extends
+ * JpaRepository to inherit basic CRUD (Create, Read, Update, Delete)
+ * operations.
+ */
 @Repository
 public interface PropertyRestrictionRepository extends JpaRepository<PropertyRestriction, Serializable> {
 
+	/**
+	 * Retrieve a PropertyRestriction by restriction type.
+	 *
+	 * @param restrictionType the type of property restriction to search for
+	 * @return an Optional containing the PropertyRestriction if found, or empty if
+	 *         not found
+	 */
 	Optional<PropertyRestriction> findByRestrictionType(String restrictionType);
-	
-	@Query(value = "select r.rstr_type from prop_rstr r",nativeQuery = true)
-	List<String> findAllRestrictionTypes();
 
+	/**
+	 * Retrieve a list of all restriction types.
+	 *
+	 * @return a List containing all restriction types of property restrictions
+	 */
+	@Query(value = "select r.rstr_type from prop_rstr r", nativeQuery = true)
+	List<String> findAllRestrictionTypes();
 
 }

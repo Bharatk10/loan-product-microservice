@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -37,6 +36,7 @@ import com.zettamine.mpa.lpm.exception.ResourceAlreadyExistsException;
 import com.zettamine.mpa.lpm.exception.ResourceNotFoundException;
 import com.zettamine.mpa.lpm.model.PropertyRestrictionDto;
 import com.zettamine.mpa.lpm.service.IPropertyRestrictionService;
+import com.zettamine.mpa.lpm.util.RestrictionTypeReq;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -94,7 +94,6 @@ public class PropertyRestrictionControllerTest {
 	}
 
 	@Test
-	@Disabled
 	public void testGetPropertyRestriction() throws Exception {
 
 		PropertyRestrictionDto dto = new PropertyRestrictionDto(); // Populate with test data
@@ -130,14 +129,13 @@ public class PropertyRestrictionControllerTest {
 		List<String> types = Arrays.asList("Type1", "Type2");
 		when(restrService.getAllRestrictionTypes()).thenReturn(types);
 
-		mockMvc.perform(get("/api/v1/loan-product/restr/fetch/restriction-types")).andExpect(status().isOk())
+		mockMvc.perform(get("/api/v1/loan-product/restr/fetch/rstr-types")).andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(types.size()));
 
 		verify(restrService, times(1)).getAllRestrictionTypes();
 	}
 
 	@Test
-	@Disabled
 	public void testCreatePropertyRestriction_ResourceAlreadyExistsException() throws Exception {
 		PropertyRestrictionDto dto = new PropertyRestrictionDto();
 		dto.setRestrictionType("one");
@@ -223,5 +221,62 @@ public class PropertyRestrictionControllerTest {
 
 		verify(restrService, times(1)).getPropertyRestrictionById(anyInt());
 	}
+	
+	@Test
+    public void updateRestrictionType_ResourceNotFoundException() throws Exception {
+        RestrictionTypeReq req = new RestrictionTypeReq();
+        req.setRestrictionType("NewType");
+        
+        Integer propRestId =1 ;
+
+        doThrow(new ResourceNotFoundException(String.format(AppConstants.PROP_RSTR_NOT_EXISTS_BY_ID_MSG, propRestId.toString())))
+                .when(restrService).updateRestrictionType(anyInt(), any(RestrictionTypeReq.class));
+
+        mockMvc.perform(put("/api/v1/loan-product/restr/update/rstr-type/{rstrId}", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+	.andExpect(jsonPath("$.apiPath").exists())
+	.andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.name()))
+	.andExpect(jsonPath("$.errorMessage")
+			.value(String.format(AppConstants.PROP_RSTR_NOT_EXISTS_BY_ID_MSG, propRestId.toString())))
+	.andExpect(jsonPath("$.errorTime").exists());
+    }
+
+    @Test
+    public void updateRestrictionType_ResourceAlreadyExistsException() throws Exception {
+        RestrictionTypeReq req = new RestrictionTypeReq();
+        req.setRestrictionType("ExistingType");
+
+        doThrow(new ResourceAlreadyExistsException(
+				String.format(AppConstants.PROP_RSTR_EXISTS_MSG, req.getRestrictionType())))
+                .when(restrService).updateRestrictionType(anyInt(), any(RestrictionTypeReq.class));
+
+        mockMvc.perform(put("/api/v1/loan-product/restr/update/rstr-type/{rstrId}", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+        .andExpect(jsonPath("$.apiPath").exists())
+		.andExpect(jsonPath("$.errorCode").value(HttpStatus.CONFLICT.name()))
+		.andExpect(jsonPath("$.errorMessage")
+				.value(String.format(AppConstants.PROP_RSTR_EXISTS_MSG, req.getRestrictionType())))
+		.andExpect(jsonPath("$.errorTime").exists());
+    }
+
+    @Test
+    public void updateRestrictionType_Success() throws Exception {
+        RestrictionTypeReq req = new RestrictionTypeReq();
+        req.setRestrictionType("NewValidType");
+
+        doNothing().when(restrService).updateRestrictionType(anyInt(), any(RestrictionTypeReq.class));
+
+        mockMvc.perform(put("/api/v1/loan-product/restr/update/rstr-type/{rstrId}", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(AppConstants.STATUS_200))
+                .andExpect(jsonPath("$.statusMsg").value(AppConstants.RSTR_UPDATED_SUCCESS));
+    }
+    
+ 
 
 }

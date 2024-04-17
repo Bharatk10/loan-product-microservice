@@ -39,6 +39,13 @@ public class PropertyRestrictionCategoryController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PropertyRestrictionCategory.class);
 
+
+	/**
+	 * Endpoint to create a new property restriction category.
+	 *
+	 * @param propertyRestrictionCategoryDto The DTO containing information about the property restriction category to be created.
+	 * @return ResponseEntity indicating the status of the request.
+	 */
 	@Operation(summary = "Create Property Restriction Category REST API", description = "REST API to create Property Restriction Category")
 	@ApiResponses({ @ApiResponse(responseCode = "201", description = "HTTP Status CREATED"),
 		@ApiResponse(responseCode = "409", description = "HTTP Status CONFLICT"),
@@ -53,7 +60,12 @@ public class PropertyRestrictionCategoryController {
 				.body(new ResponseDto(AppConstants.STATUS_201, AppConstants.CREATE_PROPERTY_RSTR_CATG_MESSAGE));
 
 	}
-
+	/**
+	 * Endpoint to fetch property restriction category details by category ID.
+	 *
+	 * @param categoryId The ID of the property restriction category to fetch.
+	 * @return ResponseEntity containing the property restriction category details.
+	 */
 	@Operation(summary = "Fetch Property Restriction Category Details By Category Id REST API", description = "REST API to fetch Property Restriction Category Details By based on a Category Id")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
 			@ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))) })
@@ -65,6 +77,14 @@ public class PropertyRestrictionCategoryController {
 		return ResponseEntity.status(HttpStatus.OK).body(propRestCategoryDto);
 
 	}
+	/**
+	 * Endpoint to update property restriction category description by category ID and category type.
+	 *
+	 * @param propertyRestrictionCategoryDto The DTO containing updated information about the property restriction category.
+	 * @param categoryId                     The ID of the property restriction category to update.
+	 * @return ResponseEntity indicating the status of the request.
+	 */
+
 	
 	@Operation(summary = "Update Property Restriction Category Description Details By Category Id & Category Type REST API", description = "REST API to update Property Restriction Category Description   based on a Category Id and Category Type")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
@@ -80,8 +100,13 @@ public class PropertyRestrictionCategoryController {
 				.body(new ResponseDto(AppConstants.STATUS_200, AppConstants.UPDATE_MESSAGE));
 
 	}
+	/**
+	 * Endpoint to fetch all property restriction category details.
+	 *
+	 * @return ResponseEntity containing a list of property restriction category types.
+	 */
 	
-	@Operation(summary = "Fetch All Property Restriction Category Details REST API", description = "REST API to fetch  Property Restriction Category Details")
+	@Operation(summary = "Fetch All Property Restriction Category Types REST API", description = "REST API to fetch  Property Restriction Category Details")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
 			@ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))) })
 	@GetMapping("/fetch/category-types")
@@ -92,6 +117,13 @@ public class PropertyRestrictionCategoryController {
 		return ResponseEntity.status(HttpStatus.OK).body(categoryTypes);
 		
 	}
+	/**
+	 * Endpoint to update property restriction category type by category ID.
+	 *
+	 * @param requestCategoryType The request body containing the new category type.
+	 * @param categoryId          The ID of the property restriction category to update.
+	 * @return ResponseEntity indicating the status of the request.
+	 */
 	
 	
 	@Operation(summary = "Update Property Restriction Category Type By Category Id REST API", description = "REST API to update Property Restriction Category Type   based on a Category Id")
