@@ -10,6 +10,8 @@ import lombok.Data;
 @Data
 public class ProductStatusHistoryDto {
 	
+	
+
 	@JsonProperty(access = Access.WRITE_ONLY)
 	private Integer productId;
 	

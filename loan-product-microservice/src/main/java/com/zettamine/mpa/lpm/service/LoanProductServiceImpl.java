@@ -391,7 +391,7 @@ public class LoanProductServiceImpl implements ILoanProductService {
 		if (prodStatusHistoryList.isEmpty()) {
 
 			throw new ResourceNotFoundException(String.format(AppConstants.LOAN_PROD_NOT_ACTIVE, productId));
-		}
+		} 
 		List<ProductStatusHistoryDto> propHistoryDtoList = new ArrayList<>();
 		ProductStatusHistoryDto propHistoryDto;
 		for (ProductStatusHistory prodStatusHistory : prodStatusHistoryList) {
