@@ -115,18 +115,27 @@ public class LoanProductServiceImpl implements ILoanProductService {
 			throw new ResourceNotFoundException(
 					String.format(AppConstants.PROP_RSTR_NOT_EXISTS_MSG, missingRestrictions));
 		} else {
+
 			loanProduct.setPropertyRestrictionExists(AppConstants.STATUS_TRUE);
 			loanProduct.setPropertyRestrcitions(propRestrictions);
+			if (loanProd.getPropertyRestrcitions() == null || loanProd.getPropertyRestrcitions().isEmpty()) {
+
+				loanProduct.setPropertyRestrictionExists(AppConstants.STATUS_FALSE);
+			}
 		}
 
-		if (loanProd.getEscrowRequirements() != null) {
+		if (loanProd.getEscrowRequirements() == null) {
 
-			loanProduct.setEscrowRequired(AppConstants.STATUS_TRUE);
-
-		} else {
 			loanProduct.setEscrowRequired(AppConstants.STATUS_FALSE);
+		} else if (loanProd.getEscrowRequirements().isEmpty()) {
+			loanProduct.setEscrowRequired(AppConstants.STATUS_FALSE);
+		} else {
+			loanProduct.setEscrowRequired(AppConstants.STATUS_TRUE);
 		}
+
 		if (loanProd.getUnderwritingCriteria() == null) {
+			loanProduct.setStatus(AppConstants.STATUS_FALSE);
+		} else if (loanProd.getUnderwritingCriteria().isEmpty()) {
 			loanProduct.setStatus(AppConstants.STATUS_FALSE);
 		} else {
 			loanProduct.setStatus(AppConstants.STATUS_TRUE);
